@@ -25,19 +25,45 @@ Just put the Block inside a Lava source or use a Lava Bucket on it to put Lava i
 Anyone can contribute to Lavalogged, suggesting their ideas [using the Feature Request module](https://github.com/JimiIT92/Lavalogged/issues/new?assignees=JimiIT92&labels=enhancement&template=feature_request.md&title=)
 
 -------------------------
+
+### 🧱 Multi-version build
+
+Lavalogged builds for **1.19.4, 1.20.1, 1.21.11 and 26.3** from one shared source tree, using
+[Stonecutter](https://stonecutter.kikugie.dev/). Each version gets its own jar:
+
+| Version | Mappings | Java | Property backend |
+| --- | --- | --- | --- |
+| 1.19.4 | Yarn `1.19.4+build.2` | 17 | Statement 4.2.9 |
+| 1.20.1 | Yarn `1.20.1+build.10` | 17 | Statement 4.2.9 |
+| 1.21.11 | Mojang mappings | 21 | Built-in state refresher |
+| 26.3 | Unobfuscated | 21 | Built-in state refresher |
+
+To build every version:
+
+```
+./gradlew :1.19.4:build :1.20.1:build :1.21.11:build :26.3:build
+```
+
+The jars land in `versions/<version>/build/libs/`. `stonecutter.gradle.kts` selects which version
+the IDE sees when editing the shared sources (`stonecutter active "1.20.1"`).
+
+The 1.21.11 and 26.3 builds do **not** depend on Statement: the `lavalogged` property is appended
+by the mod itself (`org.lavalogged.state.LavaStateRefresher`), keeping every existing block state
+id stable and appending the new variants at the end of the block state id list.
+
+-------------------------
 ### ⚙ Requirements
 
-Lavalogged requires the [Statement API Library Mod](https://modrinth.com/mod/statement) to work.
-This is a necessary requirement for adding custom properties to existing Blocks, and is also the reason why
-the mod has not been update to 1.21.1 yet.
+* Minecraft 1.19.4 / 1.20.1: the [Statement API Library Mod](https://modrinth.com/mod/statement) (declared as a dependency in `fabric.mod.json`).
+* Minecraft 1.21.11 / 26.3: no additional libraries.
 
 -------------------------
 
 ### 📜 Future Updates
 
 Future Updates may include, but not guaranteed:
-- Removal of the [Statement API Library Mod](https://modrinth.com/mod/statement) dependency
-- Update to Minecraft 1.21.1
+- ~~Removal of the [Statement API Library Mod](https://modrinth.com/mod/statement) dependency~~ (done for 1.21.11 / 26.3)
+- ~~Update to Minecraft 1.21.1~~ (1.21.11 and 26.3 are supported)
 - Support for modded Blocks
 - Support for Forge and NeoForge
 

@@ -20,6 +20,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Mixin class for handling the use of a {@link BucketItem Bucket} on a {@link Lavaloggable Lavaloggable} {@link Block Block}
+ * <p>
+ * Targets {@link AbstractBlock AbstractBlock} (covers every block that does not override {@code onUse}) plus every
+ * lavaloggable class that declares its own {@code onUse} override, so the bucket interaction is intercepted before
+ * vanilla handles it. Classes that never override {@code onUse} are reachable through the base target.
  */
 @Mixin({
         AbstractBlock.class,
@@ -27,10 +31,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
         CampfireBlock.class,
         CandleBlock.class,
         ChestBlock.class,
-        FenceBlock.class,
+        //? if 1.20.1
         DecoratedPotBlock.class,
         EnderChestBlock.class,
-        TrapdoorBlock.class
+        FenceBlock.class,
+        HangingSignBlock.class,
+        LightBlock.class,
+        StairsBlock.class,
+        TrapdoorBlock.class,
+        WallHangingSignBlock.class
 })
 public class BucketUseMixin {
 

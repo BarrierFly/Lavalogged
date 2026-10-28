@@ -13,39 +13,47 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Mixin class for handling neighbor updates of a {@link Lavaloggable Lavaloggable} {@link Block Block}
+ * <p>
+ * Targets every lavaloggable class (marker inherited from {@link Lavaloggable Lavaloggable}) that declares its own
+ * {@code getStateForNeighborUpdate} override; the base {@link AbstractBlock} declaration is intentionally not targeted
+ * because every entry here overrides it.
  */
 @Mixin({
         AbstractRailBlock.class,
+        AbstractSignBlock.class,
         AmethystClusterBlock.class,
-        BarrierBlock.class,
         BigDripleafBlock.class,
+        BigDripleafStemBlock.class,
         CampfireBlock.class,
         CandleBlock.class,
         ChainBlock.class,
         ChestBlock.class,
         ConduitBlock.class,
-        CoralParentBlock.class,
+        CoralBlock.class,
         CoralFanBlock.class,
+        CoralParentBlock.class,
         CoralWallFanBlock.class,
         DeadCoralWallFanBlock.class,
+        //? if 1.20.1
         DecoratedPotBlock.class,
         EnderChestBlock.class,
         FenceBlock.class,
-        GrateBlock.class,
+        GlowLichenBlock.class,
         HangingRootsBlock.class,
         HangingSignBlock.class,
-        LightBlock.class,
         LadderBlock.class,
         LanternBlock.class,
         LeavesBlock.class,
+        LightBlock.class,
         LightningRodBlock.class,
         MangroveRootsBlock.class,
-        MultifaceGrowthBlock.class,
         PaneBlock.class,
         PointedDripstoneBlock.class,
         PropaguleBlock.class,
         ScaffoldingBlock.class,
         SculkSensorBlock.class,
+        SculkShriekerBlock.class,
+        SculkVeinBlock.class,
         SeaPickleBlock.class,
         SignBlock.class,
         SlabBlock.class,

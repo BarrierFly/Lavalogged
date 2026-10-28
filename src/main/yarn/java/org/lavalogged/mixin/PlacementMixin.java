@@ -11,11 +11,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * Mixin class for handling the placement of a {@link Lavaloggable Lavaloggable} {@link Block Block}
+ * <p>
+ * Targets {@link Block Block} (covers every block that does not override {@code getPlacementState}) plus every
+ * lavaloggable class that declares its own {@code getPlacementState} override.
  */
 @Mixin({
         AbstractRailBlock.class,
         AmethystClusterBlock.class,
-        BarrierBlock.class,
         BigDripleafBlock.class,
         Block.class,
         CampfireBlock.class,
@@ -24,9 +26,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
         ChestBlock.class,
         ConduitBlock.class,
         CoralParentBlock.class,
+        //? if 1.20.1 {
+        CalibratedSculkSensorBlock.class,
         DecoratedPotBlock.class,
+        //?}
+        DeadCoralWallFanBlock.class,
         EnderChestBlock.class,
-        GrateBlock.class,
+        FenceBlock.class,
         HangingRootsBlock.class,
         HangingSignBlock.class,
         LadderBlock.class,
@@ -34,7 +40,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
         LeavesBlock.class,
         LightningRodBlock.class,
         MangroveRootsBlock.class,
-        MultifaceGrowthBlock.class,
         PaneBlock.class,
         PointedDripstoneBlock.class,
         PropaguleBlock.class,
