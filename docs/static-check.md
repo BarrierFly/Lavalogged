@@ -160,6 +160,27 @@ lavalogged 状态发光 15（与真实熔岩一致；光照本身按整格位置
 * 收取音效：vanilla 的 `getBucketFillSound`/`getPickupSound` 无状态参数，用线程本地标记
   （`LavaDrainSound`）在 `tryDrainFluid`/`pickupBlock` 与声音回调之间传递"刚收的是熔岩"。
 
+## 运行期修复：Lavaloggable 从 mixin 接口改为普通接口 + 空壳类 mixin
+
+游戏内实测（配合 carpet-tis-addition）在 mixin PREPARE 阶段崩溃：
+`@Mixin target type mismatch: net.minecraft.class_5542 is not an interface`。
+
+根因：新版 sponge-mixin 按 mixin 内容分类（`MixinInfo.getVariant`）：含非 accessor 方法的
+接口 mixin 归为 `Variant.INTERFACE`，而 `SubType.Interface` 以 `targetMustBeInterface=true`
+构造，强制所有 `@Mixin` 目标必须是接口——我们的目标全是方块类，必崩。上游原版没崩纯属
+侥幸：它的 `Lavaloggable` 是空接口，被归为 `Variant.ACCESSOR`（允许以类为目标）。
+往接口里加 default/static 方法后分类变成 INTERFACE，雷被踩响。
+
+修法（V1 同款、也是现代 mixin 的标准鸭子模式）：
+* `Lavaloggable` 改为**普通接口**（无 `@Mixin`，承载 default/static 方法，仍继承
+  `Waterloggable`/`SimpleWaterloggedBlock`）；
+* 新增 `LavaloggableMixin` 抽象类 mixin（目标清单不变），仅 `implements Lavaloggable`——
+  类变体允许以类为目标，合并后每个目标方块自动实现该接口并经 JVM 接口分派获得默认方法；
+* mixins.json 里 `Lavaloggable` → `LavaloggableMixin`。
+
+已用 javap 验证四个版本的产物：接口无 `@Mixin` 注解且携带全部 default 方法
+（yarn 版方法名被 loom 重映射为 intermediary），mixin 类携带 `@Mixin` 并实现接口。
+
 ## 未采用（参考 V1 后的决定）
 
 * V1 的数据包名单、铁砧/下落方块扩展——用户选择维持含水清单；

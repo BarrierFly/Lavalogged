@@ -7,7 +7,7 @@
     "AbstractBlockStateMixin",
     "BigDripleafBlockMixin",
     "BucketUseMixin",
-    "Lavaloggable",
+    "LavaloggableMixin",
     "MultifaceBlockMixin",
     "NeighborUpdateMixin",
     "PlacementMixin",

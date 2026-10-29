@@ -14,16 +14,15 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldAccess;
 import org.lavalogged.Lavalogged;
 import org.lavalogged.LavaDrainSound;
-import org.spongepowered.asm.mixin.Mixin;
 
 /**
- * Mixin Interface for a Lavaloggable {@link Block Block}
+ * Marker interface for a Lavaloggable {@link Block Block}
  * <p>
- * Targets every class that directly implements {@link Waterloggable Waterloggable};
+ * Applied to every class that directly implements {@link Waterloggable Waterloggable};
  * subclasses (rails, signs, panes, corals, ...) inherit the marker from these.
  * <p>
- * Keep this list in sync with each Minecraft version: it must contain exactly the
- * direct {@link Waterloggable Waterloggable} implementors of the targeted version.
+ * The list lives in {@link LavaloggableMixin LavaloggableMixin}; the mixin makes every target
+ * block implement this interface so the default methods below apply.
  * <p>
  * The default methods mirror the vanilla {@link Waterloggable Waterloggable} fluid logic with
  * water replaced by lava, so the vanilla bucket, dispenser and fluid-spread paths all work:
@@ -32,43 +31,6 @@ import org.spongepowered.asm.mixin.Mixin;
  * whose collision shape is a full cube (double slabs, heavy cores) never accept lava because
  * there is no room for it.
  */
-@Mixin({
-        AbstractRailBlock.class,
-        AbstractSignBlock.class,
-        AmethystClusterBlock.class,
-        BigDripleafBlock.class,
-        BigDripleafStemBlock.class,
-        CampfireBlock.class,
-        CandleBlock.class,
-        ChainBlock.class,
-        ChestBlock.class,
-        ConduitBlock.class,
-        CoralParentBlock.class,
-        //? if 1.20.1
-        DecoratedPotBlock.class,
-        EnderChestBlock.class,
-        GlowLichenBlock.class,
-        HangingRootsBlock.class,
-        HorizontalConnectingBlock.class,
-        LadderBlock.class,
-        LanternBlock.class,
-        LeavesBlock.class,
-        LightBlock.class,
-        LightningRodBlock.class,
-        MangroveRootsBlock.class,
-        PointedDripstoneBlock.class,
-        PropaguleBlock.class,
-        ScaffoldingBlock.class,
-        SculkSensorBlock.class,
-        SculkShriekerBlock.class,
-        SculkVeinBlock.class,
-        SeaPickleBlock.class,
-        SlabBlock.class,
-        SmallDripleafBlock.class,
-        StairsBlock.class,
-        TrapdoorBlock.class,
-        WallBlock.class
-})
 public interface Lavaloggable extends Waterloggable {
 
 	/**

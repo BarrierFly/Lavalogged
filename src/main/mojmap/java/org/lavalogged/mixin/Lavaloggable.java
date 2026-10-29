@@ -17,16 +17,15 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import org.lavalogged.Lavalogged;
 import org.lavalogged.LavaDrainSound;
-import org.spongepowered.asm.mixin.Mixin;
 
 /**
- * Mixin Interface for a Lavaloggable {@link Block Block}
+ * Marker interface for a Lavaloggable {@link Block Block}
  * <p>
- * Targets every class that directly implements {@link SimpleWaterloggedBlock SimpleWaterloggedBlock};
+ * Applied to every class that directly implements {@link SimpleWaterloggedBlock SimpleWaterloggedBlock};
  * subclasses (rails, signs, panes, corals, ...) inherit the marker from these.
  * <p>
- * Keep this list in sync with each Minecraft version: it must contain exactly the direct
- * {@link SimpleWaterloggedBlock SimpleWaterloggedBlock} implementors of the targeted version.
+ * The list lives in {@link LavaloggableMixin LavaloggableMixin}; the mixin makes every target
+ * block implement this interface so the default methods below apply.
  * <p>
  * The default methods mirror the vanilla {@link SimpleWaterloggedBlock SimpleWaterloggedBlock}
  * fluid logic with water replaced by lava, so the vanilla bucket, dispenser and fluid-spread paths
@@ -35,51 +34,6 @@ import org.spongepowered.asm.mixin.Mixin;
  * blocks whose collision shape is a full block (double slabs, heavy cores) never accept lava
  * because there is no room for it.
  */
-@Mixin({
-        AmethystClusterBlock.class,
-        BarrierBlock.class,
-        BaseCoralPlantTypeBlock.class,
-        BaseRailBlock.class,
-        BigDripleafBlock.class,
-        BigDripleafStemBlock.class,
-        CampfireBlock.class,
-        CandleBlock.class,
-        ChainBlock.class,
-        ChestBlock.class,
-        ConduitBlock.class,
-        CopperGolemStatueBlock.class,
-        CrossCollisionBlock.class,
-        DecoratedPotBlock.class,
-        DriedGhastBlock.class,
-        EnderChestBlock.class,
-        HangingRootsBlock.class,
-        HeavyCoreBlock.class,
-        LadderBlock.class,
-        LanternBlock.class,
-        LeavesBlock.class,
-        LightBlock.class,
-        LightningRodBlock.class,
-        MangrovePropaguleBlock.class,
-        MangroveRootsBlock.class,
-        MultifaceBlock.class,
-        //? if 1.21.11 {
-        PointedDripstoneBlock.class,
-        //?} else {
-        /*SpeleothemBlock.class,
-         *///?}
-        ScaffoldingBlock.class,
-        SculkSensorBlock.class,
-        SculkShriekerBlock.class,
-        SeaPickleBlock.class,
-        ShelfBlock.class,
-        SignBlock.class,
-        SlabBlock.class,
-        SmallDripleafBlock.class,
-        StairBlock.class,
-        TrapDoorBlock.class,
-        WallBlock.class,
-        WaterloggedTransparentBlock.class
-})
 public interface Lavaloggable extends SimpleWaterloggedBlock {
 
 	/**
