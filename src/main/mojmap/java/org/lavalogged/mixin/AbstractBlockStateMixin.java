@@ -11,6 +11,7 @@ import org.lavalogged.mixin.Lavaloggable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
@@ -49,7 +50,7 @@ public abstract class AbstractBlockStateMixin {
 	 * @param movedByPiston whether the state was moved by a piston
 	 */
 	@Inject(method = "affectNeighborsAfterRemoval", at = @At("HEAD"))
-	private void lavalogged$leaveLavaOnBreak(ServerLevel level, BlockPos pos, boolean movedByPiston) {
+	private void lavalogged$leaveLavaOnBreak(ServerLevel level, BlockPos pos, boolean movedByPiston, CallbackInfo callbackInfo) {
 		BlockState self = (BlockState) (Object) this;
 		if (!movedByPiston && Lavaloggable.isLavalogged(self) && level.getBlockState(pos).isAir()) {
 			level.setBlock(pos, Blocks.LAVA.defaultBlockState(), Block.UPDATE_ALL);
