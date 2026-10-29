@@ -4,10 +4,14 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "AbstractBlockMixin",
+    "AbstractBlockStateMixin",
+    "BigDripleafBlockMixin",
     "BucketUseMixin",
     "Lavaloggable",
+    "MultifaceBlockMixin",
     "NeighborUpdateMixin",
-    "PlacementMixin"
+    "PlacementMixin",
+    "WallBlockMixin"
   ],
   "injectors": {
     "defaultRequire": 1

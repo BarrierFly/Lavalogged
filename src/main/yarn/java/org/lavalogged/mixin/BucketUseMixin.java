@@ -59,7 +59,7 @@ public class BucketUseMixin {
         if(this instanceof Lavaloggable && blockState.contains(Lavalogged.LAVALOGGED)) {
             ItemStack stack = player.getStackInHand(hand);
             if(!stack.isEmpty()) {
-                if(stack.isOf(Items.LAVA_BUCKET) && !blockState.get(Lavalogged.LAVALOGGED)) {
+                if(stack.isOf(Items.LAVA_BUCKET) && Lavaloggable.isLavaFillable(blockState, world, blockPos)) {
                     world.setBlockState(blockPos, blockState.with(Lavalogged.LAVALOGGED, true));
                     world.scheduleFluidTick(blockPos, Fluids.LAVA, Fluids.LAVA.getTickRate(world));
                     player.playSound(SoundEvents.ITEM_BUCKET_EMPTY_LAVA, 1.0F, 1.0F);
@@ -73,6 +73,9 @@ public class BucketUseMixin {
                 }
                 if(stack.isOf(Items.BUCKET) && blockState.get(Lavalogged.LAVALOGGED)) {
                     world.setBlockState(blockPos, blockState.with(Lavalogged.LAVALOGGED, false));
+                    if(!blockState.canPlaceAt(world, blockPos)) {
+                        world.breakBlock(blockPos, true);
+                    }
                     player.playSound(SoundEvents.ITEM_BUCKET_FILL_LAVA, 1.0F, 1.0F);
                     player.swingHand(hand);
                     if(!player.isCreative()) {

@@ -67,7 +67,9 @@ public class PlacementMixin {
     @Inject(method = "getPlacementState(Lnet/minecraft/item/ItemPlacementContext;)Lnet/minecraft/block/BlockState;", at = @At("RETURN"), cancellable = true)
     private void getPlacementState(final ItemPlacementContext itemPlacementContext, final CallbackInfoReturnable<BlockState> callbackInfoReturnable) {
         if (this instanceof Lavaloggable && callbackInfoReturnable.getReturnValue() != null && callbackInfoReturnable.getReturnValue().contains(Lavalogged.LAVALOGGED)) {
-            callbackInfoReturnable.setReturnValue(callbackInfoReturnable.getReturnValue().with(Lavalogged.LAVALOGGED, itemPlacementContext.getWorld().getFluidState(itemPlacementContext.getBlockPos()).getFluid() == Fluids.LAVA));
+            BlockState placed = callbackInfoReturnable.getReturnValue();
+            boolean inLavaSource = itemPlacementContext.getWorld().getFluidState(itemPlacementContext.getBlockPos()).getFluid() == Fluids.LAVA;
+            callbackInfoReturnable.setReturnValue(placed.with(Lavalogged.LAVALOGGED, inLavaSource && Lavaloggable.isLavaFillable(placed, itemPlacementContext.getWorld(), itemPlacementContext.getBlockPos())));
         }
     }
 

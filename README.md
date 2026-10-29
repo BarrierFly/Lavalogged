@@ -51,6 +51,24 @@ The 1.21.11 and 26.3 builds do **not** depend on Statement: the `lavalogged` pro
 by the mod itself (`org.lavalogged.state.LavaStateRefresher`), keeping every existing block state
 id stable and appending the new variants at the end of the block state id list.
 
+### 🌋 Mechanics
+
+* **Filling**: a lava bucket (or dispenser), a lava source arriving at the block, or placing the
+  block inside a lava source fills it. Flowing lava never fills a block directly - it only does so
+  when the game promotes it to a source, i.e. with the `lavaSourceConversion` game rule enabled
+  plus vanilla's neighbor conditions, exactly mirroring how the infinite water rule gates
+  waterlogging. States whose collision shape is a full block (double slabs, heavy cores) never
+  accept lava.
+* **Draining**: collecting the lava with a bucket returns a lava bucket and keeps the block;
+  breaking a lavalogged block leaves the lava behind as a source, so the other phase is always
+  preserved.
+* **Flow**: the lava inside behaves like a real lava source and flows out through the block's
+  open sides; lavalogged blocks count as "lava source below" for vanilla's own source conversion.
+* **Light**: lavalogged blocks emit light level 15, like real lava.
+* **Rendering**: vanilla resolves the model from the remaining properties, so lavalogged blocks
+  look unchanged with the lava rendered by the fluid layer; vanilla's own shape checks govern
+  where the lava may flow in and out.
+
 -------------------------
 ### ⚙ Requirements
 

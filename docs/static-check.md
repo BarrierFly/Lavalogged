@@ -108,3 +108,61 @@ guardian（mojmap/vineflower 分支）：192e7132b4 = 1.21.11   d5822ca2a1 = 26.
 
 四个版本的 stonecutter 指令展开均已抽查（1.19.4 正确剔除 `DecoratedPotBlock`、
 26.3 正确切换 `SpeleothemBlock` 与并行数组实现）。mixin 运行期应用情况需在游戏内验证。
+
+# 机制完善轮（对照 LavaloggingV1 与 vanilla 源码）
+
+第二轮按用户确认的规则把熔岩机制补全。所有规则先经用户确认：
+
+## 充熔岩（四条路径的门控）
+
+| 路径 | 门控 | 内部流体 |
+| --- | --- | --- |
+| 桶充（`useItemOn`/`onUse` 拦截 + vanilla `FluidFillable`/`LiquidBlockContainer` 接口路径） | `isLavaFillable`：未充、未含水、碰撞形状非完整方块 | 熔岩源 |
+| 先放熔岩后放方块（`getPlacementState`/`getStateForPlacement`） | 同上 + 位置流体必须是**熔岩源**（vanilla 台阶对水同款：流动中放置从不充入） | 熔岩源 |
+| 流动熔岩流入（被检测） | vanilla `spreadTo` → `placeLiquid`：默认实现只接受**源**流体。流动熔岩只有在 `getNewLiquid` 把它提升为源时才会进入——该提升要求 `gamerule lavaSourceConversion` 开启 + 目标位置周围 ≥2 相邻源 + 下方固体或源。即"无限熔岩规则控制源向可含熔岩方块填充"，与原版无限水规则控制充水机制完全一致 | 熔岩源 |
+| 发射器（免费获得） | 与桶同路径 | 熔岩源 |
+
+实现方式：`Lavaloggable` 接口在 `Waterloggable`/`SimpleWaterloggedBlock` 的默认方法基础上
+增加熔岩分支（水逻辑经 `Waterloggable.super`/`SimpleWaterloggedBlock.super` 保留），
+水与熔岩互斥（已含熔岩拒绝水，反之亦然）。
+
+## 收走与破坏（两相保留）
+
+* 收走熔岩：`tryDrainFluid`/`pickupBlock` 返回熔岩桶并把方块置回 `lavalogged=false`，
+  若方块因此失去支撑则按 vanilla 语义破坏；桶/发射器路径自动生效。
+* 破坏方块：`AbstractBlockStateMixin` 在状态级钩子（yarn `onStateReplaced` /
+  mojmap `affectNeighborsAfterRemoval`——选状态级是因为箱子等子类覆写块级方法会遮蔽注入）
+  检测"旧状态 lavalogged + 新状态为空气 + 非活塞移动"，在原位留一个熔岩源。
+
+## 发光
+
+`AbstractBlockStateMixin` 注入 `getLuminance`（yarn）/`getLightEmission`（mojmap），
+lavalogged 状态发光 15（与真实熔岩一致；光照本身按整格位置计算，"形状考虑"由充入门控承担——
+无空间容纳熔岩的状态不可能被充入，自然不发光）。
+
+## 方块形状（两处）
+
+1. **形状缓存修复**：这些类在构造器里按"当时的全部状态"建形状表，运行后追加的
+   lavalogged 状态查表得 null → 崩溃。修法 = 覆写形状方法、按 `with(lavalogged=false)` 查表：
+   * 1.19.4 / 1.20.1：`WallBlock`（outline+collision 两张表）、`BigDripleafBlock`（outline；
+     collision 按 tilt 静态取，无需修）、`MultifaceGrowthBlock`（outline）；
+   * 1.21.11 / 26.3：`WallBlock`、`BigDripleafBlock`、`MultifaceBlock`、
+     `CrossCollisionBlock`（后两者均为 outline+collision）。
+2. **流体流入/流出的形状判定**：vanilla 的 `canPassThroughWall` 比对源/目标碰撞形状、
+   `isSolidFace` 检查面强度——完全复用 vanilla，无需自写。
+
+## 桶交互补充
+
+* 保留对会吞掉交互的方块（箱子、末影箱、木牌家族、`ShelfBlock`、`CopperGolemStatueBlock`、
+  `DecoratedPotBlock`、营火、蜡烛等）的 `onUse`/`useItemOn` 拦截——vanilla 桶路径在这些方块上
+  会先被方块自身的交互逻辑吃掉；
+* 非交互方块的桶充/收走走 vanilla 接口路径（同时覆盖发射器）；
+* 收取音效：vanilla 的 `getBucketFillSound`/`getPickupSound` 无状态参数，用线程本地标记
+  （`LavaDrainSound`）在 `tryDrainFluid`/`pickupBlock` 与声音回调之间传递"刚收的是熔岩"。
+
+## 未采用（参考 V1 后的决定）
+
+* V1 的数据包名单、铁砧/下落方块扩展——用户选择维持含水清单；
+* V1 的 `BucketItem.use` 整体拦截——用接口默认实现 + 少量块级拦截覆盖面更完整（含发射器）；
+* V1 对双层台阶的特判——推广为"碰撞形状为完整方块的状态禁止充入"通用规则。
+

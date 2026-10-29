@@ -82,17 +82,12 @@ public class PlacementMixin {
     @Inject(method = "getStateForPlacement", at = @At("RETURN"), cancellable = true)
     private void lavalogged$getStateForPlacement(final BlockPlaceContext blockPlaceContext, final CallbackInfoReturnable<BlockState> callbackInfoReturnable) {
         if (this instanceof Lavaloggable && callbackInfoReturnable.getReturnValue() != null && callbackInfoReturnable.getReturnValue().hasProperty(Lavalogged.LAVALOGGED)) {
-            callbackInfoReturnable.setReturnValue(callbackInfoReturnable.getReturnValue().setValue(Lavalogged.LAVALOGGED, isLava(callbackInfoReturnable.getReturnValue(), blockPlaceContext)));
+            BlockState placed = callbackInfoReturnable.getReturnValue();
+            BlockPos pos = blockPlaceContext.getClickedPos();
+            FluidState fluidState = blockPlaceContext.getLevel().getFluidState(pos);
+            boolean inLavaSource = fluidState.is(Fluids.LAVA) && fluidState.isSource();
+            callbackInfoReturnable.setReturnValue(placed.setValue(Lavalogged.LAVALOGGED, inLavaSource && Lavaloggable.isLavaFillable(placed, blockPlaceContext.getLevel(), pos)));
         }
-    }
-
-    /**
-     * {@return whether the {@link BlockState Block State} is placed inside a {@link Fluids#LAVA Lava} source}
-     */
-    private static boolean isLava(final BlockState blockState, final BlockPlaceContext blockPlaceContext) {
-        BlockPos blockPos = blockPlaceContext.getClickedPos();
-        FluidState fluidState = blockPlaceContext.getLevel().getFluidState(blockPos);
-        return fluidState.is(Fluids.LAVA) && fluidState.isSource();
     }
 
 }

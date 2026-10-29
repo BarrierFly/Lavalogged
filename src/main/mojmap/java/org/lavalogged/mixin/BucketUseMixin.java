@@ -61,7 +61,7 @@ public class BucketUseMixin {
     @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
     private void lavalogged$useItemOn(final ItemStack stack, final BlockState blockState, final Level level, final BlockPos blockPos, final Player player, final InteractionHand hand, final BlockHitResult blockHitResult, final CallbackInfoReturnable<InteractionResult> callbackInfoReturnable) {
         if (this instanceof Lavaloggable && blockState.hasProperty(Lavalogged.LAVALOGGED) && !stack.isEmpty()) {
-            if (stack.is(Items.LAVA_BUCKET) && !blockState.getValue(Lavalogged.LAVALOGGED)) {
+            if (stack.is(Items.LAVA_BUCKET) && Lavaloggable.isLavaFillable(blockState, level, blockPos)) {
                 level.setBlock(blockPos, blockState.setValue(Lavalogged.LAVALOGGED, true), Block.UPDATE_ALL);
                 level.scheduleTick(blockPos, Fluids.LAVA, Fluids.LAVA.getTickDelay(level));
                 player.playSound(SoundEvents.BUCKET_EMPTY_LAVA, 1.0F, 1.0F);
@@ -72,8 +72,11 @@ public class BucketUseMixin {
                 callbackInfoReturnable.setReturnValue(InteractionResult.SUCCESS);
                 return;
             }
-            if (stack.is(Items.BUCKET) && blockState.getValue(Lavalogged.LAVALOGGED)) {
+            if (stack.is(Items.BUCKET) && Lavaloggable.isLavalogged(blockState)) {
                 level.setBlock(blockPos, blockState.setValue(Lavalogged.LAVALOGGED, false), Block.UPDATE_ALL);
+                if (!blockState.canSurvive(level, blockPos)) {
+                    level.destroyBlock(blockPos, true);
+                }
                 player.playSound(SoundEvents.BUCKET_FILL_LAVA, 1.0F, 1.0F);
                 if (!player.isCreative()) {
                     stack.shrink(1);
