@@ -26,6 +26,7 @@ public abstract class StateMixin<O, S extends StateHolder<O, S>> implements Stat
 	//? if 1.21.11 {
 	@Shadow
 	@Final
+	@Mutable
 	private Reference2ObjectArrayMap<Property<?>, Comparable<?>> values;
 
 	@Shadow
@@ -56,7 +57,11 @@ public abstract class StateMixin<O, S extends StateHolder<O, S>> implements Stat
 	@Override
 	public void lavalogged$addValue(final Property<?> property, final Comparable<?> value) {
 		//? if 1.21.11 {
-		this.values.put(property, value);
+		// Vanilla hands every state a Reference2ObjectArrayMap, but other mods may swap in an
+		// unmodifiable wrapper: replace the whole map instead of mutating whatever is there.
+		Reference2ObjectArrayMap<Property<?>, Comparable<?>> replaced = new Reference2ObjectArrayMap<>(this.values);
+		replaced.put(property, value);
+		this.values = replaced;
 		//?} else {
 		/*Property<?>[] newKeys = new Property<?>[this.propertyKeys.length + 1];
 		System.arraycopy(this.propertyKeys, 0, newKeys, 0, this.propertyKeys.length);
