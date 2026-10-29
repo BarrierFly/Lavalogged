@@ -1,6 +1,7 @@
 package org.lavalogged.mixin;
 
 import net.minecraft.world.level.block.*;
+import org.lavalogged.Lavaloggable;
 import org.spongepowered.asm.mixin.Mixin;
 
 /**

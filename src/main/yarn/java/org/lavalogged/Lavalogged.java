@@ -3,7 +3,7 @@ package org.lavalogged;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.registry.Registries;
 import net.minecraft.state.property.BooleanProperty;
-import org.lavalogged.mixin.Lavaloggable;
+import org.lavalogged.Lavaloggable;
 import virtuoel.statement.api.StateRefresher;
 
 /**

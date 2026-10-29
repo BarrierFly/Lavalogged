@@ -1,4 +1,4 @@
-package org.lavalogged.mixin;
+package org.lavalogged;
 
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -24,7 +24,7 @@ import org.lavalogged.LavaDrainSound;
  * Applied to every class that directly implements {@link SimpleWaterloggedBlock SimpleWaterloggedBlock};
  * subclasses (rails, signs, panes, corals, ...) inherit the marker from these.
  * <p>
- * The list lives in {@link LavaloggableMixin LavaloggableMixin}; the mixin makes every target
+ * The list lives in {@link org.lavalogged.mixin.LavaloggableMixin LavaloggableMixin}; the mixin makes every target
  * block implement this interface so the default methods below apply.
  * <p>
  * The default methods mirror the vanilla {@link SimpleWaterloggedBlock SimpleWaterloggedBlock}

@@ -181,6 +181,17 @@ lavalogged 状态发光 15（与真实熔岩一致；光照本身按整格位置
 已用 javap 验证四个版本的产物：接口无 `@Mixin` 注解且携带全部 default 方法
 （yarn 版方法名被 loom 重映射为 intermediary），mixin 类携带 `@Mixin` 并实现接口。
 
+## 运行期修复 2：普通接口必须移出 mixin 包
+
+修完上一个问题后，游戏在 `Blocks` 类初始化时又崩：
+`IllegalClassLoadError: org.lavalogged.mixin.Lavaloggable is in a defined mixin package
+org.lavalogged.mixin.* owned by lavalogged.mixins.json and cannot be referenced directly`。
+
+根因：mixin 配置声明的包是"mixin 专属包"，其中的类只能由 mixin 变换器加载；目标方块被合并
+`implements Lavaloggable` 后，JVM 在 `Blocks.<clinit>` 期间需要以普通方式加载该接口，被
+Mixin 的包保护拦截。修法：把 `Lavaloggable` 移到 `org.lavalogged`（V1 将其放 `util` 包同理），
+全部引用同步更新。
+
 ## 未采用（参考 V1 后的决定）
 
 * V1 的数据包名单、铁砧/下落方块扩展——用户选择维持含水清单；
