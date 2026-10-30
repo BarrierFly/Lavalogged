@@ -2,7 +2,6 @@ package org.lavalogged.mixin;
 
 import net.minecraft.block.*;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.Fluids;
 import net.minecraft.item.BucketItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -60,9 +59,7 @@ public class BucketUseMixin {
         if(this instanceof Lavaloggable && blockState.contains(Lavalogged.LAVALOGGED)) {
             ItemStack stack = player.getStackInHand(hand);
             if(!stack.isEmpty()) {
-                if(stack.isOf(Items.LAVA_BUCKET) && Lavaloggable.isLavaFillable(blockState, world, blockPos)) {
-                    world.setBlockState(blockPos, blockState.with(Lavalogged.LAVALOGGED, true));
-                    world.scheduleFluidTick(blockPos, Fluids.LAVA, Fluids.LAVA.getTickRate(world));
+                if(stack.isOf(Items.LAVA_BUCKET) && Lavaloggable.fillWithLava(world, blockPos, blockState)) {
                     player.playSound(SoundEvents.ITEM_BUCKET_EMPTY_LAVA, 1.0F, 1.0F);
                     player.swingHand(hand);
                     if(!player.isCreative()) {

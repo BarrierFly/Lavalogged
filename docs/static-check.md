@@ -198,3 +198,38 @@ Mixin 的包保护拦截。修法：把 `Lavaloggable` 移到 `org.lavalogged`�
 * V1 的 `BucketItem.use` 整体拦截——用接口默认实现 + 少量块级拦截覆盖面更完整（含发射器）；
 * V1 对双层台阶的特判——推广为"碰撞形状为完整方块的状态禁止充入"通用规则。
 
+
+## 运行期修复 3：充熔岩吞方块 / 树叶无法充熔岩
+
+两个游戏内行为缺陷，四个版本同构同源：
+
+### 吞方块：`BucketItem` 倾倒路径不走容器回调
+
+各版本倾倒方法（mojmap `emptyContents` / yarn `placeFluid`）只在 `content == Fluids.WATER`
+时才把 `LiquidBlockContainer`/`FluidFillable` 目标交给容器的 `placeLiquid`/`tryFillWithFluid`；
+其它流体一律走"普通放置"兜底分支——先 `destroyBlock`（可替换时）再 `setBlock(纯流体方块)`。
+而 `Lavaloggable` 的 `canPlaceLiquid/canFillWithFluid` 对熔岩返回 true，于是凡倾倒目标格
+（点击面的相邻格、发射器前方、潜行重入格）是可充岩浆的 lavaloggable 方块时，原方块被整个
+替换成纯岩浆源。非固体方块（锁链、灯笼、垂根等）更严重：`canBeReplaced(fluid)` 对非固体
+恒真，即使已 lavalogged/waterlogged 也会被打掉重铺。
+
+修法：新增 `BucketItemMixin`（两套源码），在 `emptyContents`/`placeFluid` HEAD 拦截：
+目标是 lavaloggable 方块且流体为熔岩时——可充则按桶交互同款逻辑填充（`fillWithLava`）+
+播放倾倒音效返回 true；不可充（已 lavalogged / waterlogged / 双层台阶）返回 false 拒绝，
+永不落入原版的销毁重铺分支。玩家直接右键路径仍由 `BucketUseMixin` 优先接管，二者共用
+`Lavaloggable.fillWithLava` 助手。
+
+### 树叶：碰撞形状门控误杀
+
+`isLavaFillable` 用"碰撞形状为完整方块"否决充入，意图挡住双层台阶和重质核心，但树叶、
+红树林木根、栅栏门以外的含水完整方块（树叶、格栅/WaterloggedTransparentBlock、屏障、
+重质核心）原版本身就允许含水，被一并误杀——树叶因此在所有版本都无法充岩浆。
+
+修法：门控改为**与原版含水行为对齐**——探测方块自身的
+`canPlaceLiquid(…, WATER)`/`canFillWithFluid(…, WATER)`（与 `FlowingFluid#canHoldSpecificFluid`
+传 null 用户一致）。双层台阶仍被 `SlabBlock` 自身覆写拒绝；屏障维持原状（其覆写要求非空
+创造玩家，null 探测返回 false，与旧碰撞门控结果一致）；树叶/格栅/红树林木根/重质核心
+恢复可充，与"含水方块皆可充岩浆"的模组定位一致。
+
+同步决定修订：上文"未采用"中"推广为碰撞形状完整方块禁止充入"的通用规则废止，
+替换为上述含水对齐规则。

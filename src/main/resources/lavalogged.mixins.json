@@ -6,6 +6,7 @@
     "AbstractBlockMixin",
     "AbstractBlockStateMixin",
     "BigDripleafBlockMixin",
+    "BucketItemMixin",
     "BucketUseMixin",
     "LavaloggableMixin",
     "MultifaceBlockMixin",

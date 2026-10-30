@@ -27,14 +27,18 @@ import org.lavalogged.LavaDrainSound;
  * The default methods mirror the vanilla {@link Waterloggable Waterloggable} fluid logic with
  * water replaced by lava, so the vanilla bucket, dispenser and fluid-spread paths all work:
  * flowing lava only fills a block once the game itself promotes it to a source (which requires
- * the {@code lavaSourceConversion} game rule plus vanilla's neighbor conditions), and blocks
- * whose collision shape is a full cube (double slabs, heavy cores) never accept lava because
- * there is no room for it.
+ * the {@code lavaSourceConversion} game rule plus vanilla's neighbor conditions). A block
+ * accepts lava exactly in the states where vanilla accepts water, so double slabs never accept
+ * lava either - they refuse water through {@code SlabBlock}'s own {@code canFillWithFluid} override.
  */
 public interface Lavaloggable extends Waterloggable {
 
 	/**
 	 * {@return whether the {@link BlockState Block State} can receive lava right now}
+	 * <p>
+	 * Gated on the block's own water acceptance instead of the collision shape: full-cube blocks
+	 * that vanilla happily waterlogs (leaves, mangrove roots) must stay lavaloggable, while
+	 * per-class refusals such as double slabs are honored.
 	 *
 	 * @param state {@link BlockState The current Block State}
 	 * @param world {@link BlockView The World reference}
@@ -45,7 +49,37 @@ public interface Lavaloggable extends Waterloggable {
 			&& !state.get(Lavalogged.LAVALOGGED)
 			&& state.contains(Properties.WATERLOGGED)
 			&& !state.get(Properties.WATERLOGGED)
-			&& !Block.isShapeFullCube(state.getCollisionShape(world, pos));
+			&& acceptsWater(state, world, pos);
+	}
+
+	/**
+	 * {@return whether vanilla would fill the {@link BlockState Block State} with water}
+	 * <p>
+	 * Asking the block itself keeps every vanilla {@code canFillWithFluid} override in the loop.
+	 * No recursion risk: for lava the water probe never re-enters {@link #isLavaFillable isLavaFillable}.
+	 */
+	private static boolean acceptsWater(BlockState state, BlockView world, BlockPos pos) {
+		return !(state.getBlock() instanceof FluidFillable)
+			|| ((FluidFillable) state.getBlock()).canFillWithFluid(world, pos, state, Fluids.WATER);
+	}
+
+	/**
+	 * Flip the {@link Lavalogged#LAVALOGGED Lavalogged} property to {@code true} and schedule a
+	 * lava tick, mirroring what the bucket-use mixin does for a direct click. Callers own the
+	 * sounds and item exchange.
+	 *
+	 * @param world {@link WorldAccess The World reference}
+	 * @param pos {@link BlockPos The Block Pos}
+	 * @param state {@link BlockState The current Block State}
+	 * @return whether the state was filled
+	 */
+	static boolean fillWithLava(final WorldAccess world, final BlockPos pos, final BlockState state) {
+		if (!isLavaFillable(state, world, pos)) {
+			return false;
+		}
+		world.setBlockState(pos, state.with(Lavalogged.LAVALOGGED, true), Block.NOTIFY_ALL);
+		world.scheduleFluidTick(pos, Fluids.LAVA, Fluids.LAVA.getTickRate(world));
+		return true;
 	}
 
 	/**
@@ -71,9 +105,7 @@ public interface Lavaloggable extends Waterloggable {
 		if (isLavalogged(state) && fluidState.getFluid() != Fluids.LAVA) {
 			return false;
 		}
-		if (!world.isClient() && fluidState.getFluid() == Fluids.LAVA && isLavaFillable(state, world, pos)) {
-			world.setBlockState(pos, state.with(Lavalogged.LAVALOGGED, true), Block.NOTIFY_ALL);
-			world.scheduleFluidTick(pos, Fluids.LAVA, Fluids.LAVA.getTickRate(world));
+		if (fluidState.getFluid() == Fluids.LAVA && fillWithLava(world, pos, state)) {
 			return true;
 		}
 		return Waterloggable.super.tryFillWithFluid(world, pos, state, fluidState);
